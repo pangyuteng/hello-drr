@@ -17,12 +17,17 @@ for x in file_list:
         StudyDescription=ds.StudyDescription,
         SeriesDescription=ds.SeriesDescription,
     ))
+
 df = pd.DataFrame(mylist)
 df.to_csv(csv_file,index=False)
 
+for SeriesInstanceUID in df.SeriesInstanceUID.unique():
+    tmp = df[df.SeriesInstanceUID==SeriesInstanceUID]
+    SeriesDescription = tmp.iloc[-1]['SeriesDescription']
+    print(f"{SeriesDescription} count:{len(tmp)} SeriesInstanceUID: {SeriesInstanceUID}")
 
 """
 docker run -it -v $PWD:/workdir pangyuteng/dcm:latest bash
-python dicomdir.py tmp/dcm_folder ok.csv
+python dicomdir.py tmp/dcm_folder ok.csv > ok.md
 
 """
