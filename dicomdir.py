@@ -12,6 +12,7 @@ for x in file_list:
     ds = pydicom.dcmread(x,stop_before_pixels=True)
     mylist.append(dict(
         FilePath=x,
+        InstanceNumber=ds.InstanceNumber,
         StudyInstanceUID=ds.StudyInstanceUID,
         SeriesInstanceUID=ds.SeriesInstanceUID,
         StudyDescription=ds.StudyDescription,
@@ -19,6 +20,7 @@ for x in file_list:
     ))
 
 df = pd.DataFrame(mylist)
+df = df.sort_values(['StudyInstanceUID','SeriesInstanceUID','InstanceNumber'],)
 df.to_csv(csv_file,index=False)
 
 for SeriesInstanceUID in df.SeriesInstanceUID.unique():
@@ -27,7 +29,7 @@ for SeriesInstanceUID in df.SeriesInstanceUID.unique():
     print(f"{SeriesDescription} count:{len(tmp)} SeriesInstanceUID: {SeriesInstanceUID}")
 
 """
-docker run -it -v $PWD:/workdir pangyuteng/dcm:latest bash
-python dicomdir.py tmp/dcm_folder ok.csv > ok.md
+docker run -it -v $PWD:/workdir pangyuteng/drr:latest bash
+python dicomdir.py tmp/dcm_folder ok.csv > tmp/ok.md
 
 """

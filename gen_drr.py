@@ -1,16 +1,34 @@
+import os
 import sys
+import numpy as np
+import pandas as pd 
 import SimpleITK as sitk
+import uuid
+
 import matplotlib.pyplot as plt
 import torch
 
 from diffdrr.drr import DRR
-from diffdrr.data import load_example_ct
+from diffdrr.data import read
 from diffdrr.visualization import plot_drr
 
-# Read in the volume and get its origin and spacing in world coordinates
-subject = load_example_ct()
-print(type(subject))
+csv_file = sys.argv[1]
+series_instance_uid = sys.argv[2]
+png_file = sys.argv[3]
+
+df = pd.read_csv(csv_file)
+file_list = df[df.SeriesInstanceUID==series_instance_uid].FilePath.tolist()
+reader = sitk.ImageSeriesReader()
+reader.SetFileNames(file_list)
+img_obj = reader.Execute()
+print(img_obj.GetSize())
+
+nifti_file = os.path.join(f'/tmp/{uuid.uuid4().hex}.nii.gz')
+sitk.WriteImage(img_obj,nifti_file)
+print(nifti_file)
+subject = read(nifti_file)
 print(subject.shape)
+
 # Initialize the DRR module for generating synthetic X-rays
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 drr = DRR(
@@ -27,9 +45,11 @@ translations = torch.tensor([[0.0, 850.0, 0.0]], device=device)
 # 📸 Also note that DiffDRR can take many representations of SO(3) 📸
 # For example, quaternions, rotation matrix, axis-angle, etc...
 img = drr(rotations, translations, parameterization="euler_angles", convention="ZXY")
+print(img.shape)
+
 plot_drr(img, ticks=False)
 plt.show()
-plt.savefig('ok.png')
+plt.savefig(png_file)
 
 """
 docker run -it -v $PWD:/workdir pangyuteng/drr:latest bash
