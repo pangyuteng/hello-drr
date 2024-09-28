@@ -18,6 +18,7 @@ png_file = sys.argv[3]
 
 df = pd.read_csv(csv_file)
 file_list = df[df.SeriesInstanceUID==series_instance_uid].FilePath.tolist()
+file_list = file_list[::-1]
 reader = sitk.ImageSeriesReader()
 reader.SetFileNames(file_list)
 img_obj = reader.Execute()
@@ -46,8 +47,8 @@ translations = torch.tensor([[0.0, 850.0, 0.0]], device=device)
 # For example, quaternions, rotation matrix, axis-angle, etc...
 img = drr(rotations, translations, parameterization="euler_angles", convention="ZXY")
 print(img.shape)
-
 plot_drr(img, ticks=False)
+plt.title("DRR")
 plt.show()
 plt.savefig(png_file)
 

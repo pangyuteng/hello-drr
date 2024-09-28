@@ -26,7 +26,8 @@ df.to_csv(csv_file,index=False)
 for SeriesInstanceUID in df.SeriesInstanceUID.unique():
     tmp = df[df.SeriesInstanceUID==SeriesInstanceUID]
     SeriesDescription = tmp.iloc[-1]['SeriesDescription']
-    print(f"{SeriesDescription} count:{len(tmp)} SeriesInstanceUID: {SeriesInstanceUID}")
+    StudyDescription = tmp.iloc[-1]['StudyDescription']
+    print(f"{StudyDescription} {SeriesDescription} count:{len(tmp)} SeriesInstanceUID: {SeriesInstanceUID}")
 
 """
 docker run -it -v $PWD:/workdir pangyuteng/drr:latest bash
