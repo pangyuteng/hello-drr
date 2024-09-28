@@ -15,6 +15,7 @@ from diffdrr.visualization import plot_drr
 csv_file = sys.argv[1]
 series_instance_uid = sys.argv[2]
 png_file = sys.argv[3]
+device_id = sys.argv[4] # `cpu` or `gpu` or `cuda:7`
 
 df = pd.read_csv(csv_file)
 file_list = df[df.SeriesInstanceUID==series_instance_uid].FilePath.tolist()
@@ -31,12 +32,13 @@ subject = read(nifti_file)
 print(subject.shape)
 
 # Initialize the DRR module for generating synthetic X-rays
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device(device_id)
+
 drr = DRR(
     subject,     # An object storing the CT volume, origin, and voxel spacing
     sdd=1020.0,  # Source-to-detector distance (i.e., focal length)
-    height=2000,  # Image height (if width is not provided, the generated DRR is square)
-    delx=0.2,    # Pixel spacing (in mm)
+    height=1024,  # Image height (if width is not provided, the generated DRR is square)
+    delx=0.4,    # Pixel spacing (in mm)
 ).to(device)
 
 # Set the camera pose with rotations (yaw, pitch, roll) and translations (x, y, z)
@@ -49,9 +51,11 @@ img = drr(rotations, translations, parameterization="euler_angles", convention="
 print(img.shape)
 plot_drr(img, ticks=False)
 plt.title("DRR")
+plt.tight_layout()
 plt.show()
 plt.savefig(png_file)
 
 """
 docker run -it -v $PWD:/workdir pangyuteng/drr:latest bash
+docker run --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864
 """

@@ -21,10 +21,11 @@ img = np.squeeze(img)
 plt.imshow(img,cmap='gray')
 plt.axis('off')
 plt.title("CXR")
+plt.tight_layout()
 plt.show()
 plt.savefig(png_file)
 
 """
-docker run -it -v $PWD:/workdir pangyuteng/drr:latest bash
+docker run -it -u $(id -u):$(id -g) -v $PWD:/workdir -w /workdir pangyuteng/drr:latest bash
 
 """
