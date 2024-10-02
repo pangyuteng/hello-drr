@@ -49,7 +49,7 @@ img = img.detach().cpu().numpy()
 img = np.moveaxis(img.squeeze(),0,-1)
 for idx in range(3):
     plt.subplot(131+idx)
-    plt.imshow(img[:,:,idx])
+    plt.imshow(img[:,:,idx],cmap='gray')
     plt.tight_layout()
     plt.show()
 plt.savefig(png_file)
