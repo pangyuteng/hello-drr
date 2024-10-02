@@ -45,11 +45,13 @@ print(img.shape)
 #sys.exit(1)
 #plot_drr(img, ticks=False)
 #plot_mask(img)
+img = img.detach().cpu().numpy()
 img = np.moveaxis(img.squeeze(),0,-1)
-plt.imshow(img)
-plt.title("DRR")
-plt.tight_layout()
-plt.show()
+for idx in range(3):
+    plt.subplot(131+idx)
+    plt.imshow(img[:,:,idx])
+    plt.tight_layout()
+    plt.show()
 plt.savefig(png_file)
 
 """
