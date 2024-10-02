@@ -25,7 +25,7 @@ def main(image_nifti_file,mask_nifti_file,png_file,device_id):
         sdd=1020.0,  # Source-to-detector distance (i.e., focal length)
         height=1024,  # Image height (if width is not provided, the generated DRR is square)
         width=1024,
-        delx=0.1,    # Pixel spacing (in mm)
+        delx=0.4,    # Pixel spacing (in mm)
         renderer='siddon', # 'siddon' or 'trilinear'
     ).to(device)
 
@@ -43,12 +43,20 @@ def main(image_nifti_file,mask_nifti_file,png_file,device_id):
     img = img.detach().cpu().numpy()
     img = np.moveaxis(img.squeeze(),0,-1)
     mydict = {'tmp/image.png':0,'tmp/mask1.png':1,'tmp/mask2.png':2}
+    plt.figure()
     for png_file,idx in mydict.items():
         slice_img = img[:,:,idx]
         min_val, max_val = np.min(slice_img),np.max(slice_img)
         slice_img = 255*((slice_img-min_val)/(max_val-min_val)).clip(0,1)
         slice_img = slice_img.astype(np.uint8)
         imageio.imwrite(png_file, slice_img)
+        plt.subplot(131+idx)
+        if idx == 0:
+            plt.imshow(slice_img,cmap='gray')
+        else:
+            plt.imshow(slice_img,cmap='hot')
+
+    plt.savefig(png_file)
 
 if __name__ == "__main__":
     image_nifti_file = sys.argv[1]
