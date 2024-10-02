@@ -25,7 +25,7 @@ def main(image_nifti_file,mask_nifti_file,png_file,device_id):
         sdd=1020.0,  # Source-to-detector distance (i.e., focal length)
         height=1024,  # Image height (if width is not provided, the generated DRR is square)
         width=1024,
-        delx=0.4,    # Pixel spacing (in mm)
+        delx=0.1,    # Pixel spacing (in mm)
         renderer='siddon', # 'siddon' or 'trilinear'
     ).to(device)
 
