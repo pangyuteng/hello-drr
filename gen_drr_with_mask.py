@@ -44,12 +44,12 @@ def main(image_nifti_file,mask_nifti_file,png_file,device_id):
     img = np.moveaxis(img.squeeze(),0,-1)
     mydict = {'tmp/image.png':0,'tmp/mask1.png':1,'tmp/mask2.png':2}
     plt.figure()
-    for png_file,idx in mydict.items():
+    for item_png_file,idx in mydict.items():
         slice_img = img[:,:,idx]
         min_val, max_val = np.min(slice_img),np.max(slice_img)
         slice_img = 255*((slice_img-min_val)/(max_val-min_val)).clip(0,1)
         slice_img = slice_img.astype(np.uint8)
-        imageio.imwrite(png_file, slice_img)
+        imageio.imwrite(item_png_file, slice_img)
         plt.subplot(131+idx)
         if idx == 0:
             plt.imshow(slice_img,cmap='gray')
