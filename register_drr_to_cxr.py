@@ -91,15 +91,10 @@ docker run -it -v $PWD:/workdir \
     pangyuteng/synthmorph-wrapper:0.1.0 bash
 
 python3 register_drr_to_cxr.py \
-    tmp/patient-56-files/cxr.png.hr.png \
+    tmp/patient-56-files/cxr.png \
     tmp/patient-56-files/drr-image.png \
     tmp/patient-56-files/drr-mask1-binary.png \
     tmp/patient-56-files
 
-$ ls tmp/patient-56-files/
-ct-image.nii.gz  cxr.png         drr-image-binary.png  drr-mask1-binary.png  drr-mask2-binary.png  drr-mask3-binary.png  drr-plots.png  v1_0.nii.gz
-ct-mask.nii.gz   cxr.png.hr.png  drr-image.png         drr-mask1.png         drr-mask2.png         drr-mask3.png         test.png
-pteng@REDLRADADM23712:/cvibraid/cvib2/apps/personal/pteng/github/hello-drr$
-$ rm tmp/patient-56-files/drr-image-binary.png
-pteng@REDLRADADM23712:/cvibraid/cvib2/apps/personal/pteng/github/hello-d
+
 """
