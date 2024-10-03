@@ -53,8 +53,10 @@ def main(image_nifti_file,mask_nifti_file,png_file,device_id):
         plt.subplot(131+idx)
         if idx == 0:
             plt.imshow(slice_img,cmap='gray')
+            plt.colormap()
         else:
             plt.imshow(slice_img,cmap='hot')
+            plt.colormap()
 
     plt.savefig(png_file)
 
