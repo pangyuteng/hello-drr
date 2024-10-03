@@ -63,6 +63,9 @@ def main(image_nifti_file,mask_nifti_file,png_folder,device_id):
         slice_img = 255*((slice_img-min_val)/(max_val-min_val)).clip(0,1)
         slice_img = slice_img.astype(np.uint8)
         imageio.imwrite(item_png_file, slice_img)
+        if idx != 0:
+            binary_slice_img = (255*(slice_img>0)).astype(np.uint8)
+            imageio.imwrite(item_png_file.replace(".png","-binary.png"), binary_slice_img)
         plt.subplot(141+idx)
         if idx == 0:
             plt.imshow(slice_img,cmap='gray')
