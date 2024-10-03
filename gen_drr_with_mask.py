@@ -13,7 +13,19 @@ from diffdrr.drr import DRR
 from diffdrr.data import read
 from diffdrr.visualization import plot_drr, plot_mask
 
-def main(image_nifti_file,mask_nifti_file,png_file,device_id):
+def main(image_nifti_file,mask_nifti_file,png_folder,device_id):
+
+    mask_obj = sitk.ReadImage(mask_nifti_file)
+    mask = sitk.GetArrayFromImage(mask_obj)
+    assert(len(np.unique(mask))==4)
+    png_file = os.path.join(png_folder,'drr-plots.png')
+    mydict = {
+        os.path.join(png_folder,'drr-image.png'):0,
+        os.path.join(png_folder,'drr-mask1.png'):1,
+        os.path.join(png_folder,'drr-mask2.png'):2,
+        os.path.join(png_folder,'drr-mask3.png'):3,
+    }
+
     subject = read(image_nifti_file,mask_nifti_file)
     print(subject.shape)
 
@@ -42,15 +54,16 @@ def main(image_nifti_file,mask_nifti_file,png_file,device_id):
 
     img = img.detach().cpu().numpy()
     img = np.moveaxis(img.squeeze(),0,-1)
-    mydict = {'tmp/image.png':0,'tmp/mask1.png':1,'tmp/mask2.png':2}
+
     plt.figure()
+    
     for item_png_file,idx in mydict.items():
         slice_img = img[:,:,idx]
         min_val, max_val = np.min(slice_img),np.max(slice_img)
         slice_img = 255*((slice_img-min_val)/(max_val-min_val)).clip(0,1)
         slice_img = slice_img.astype(np.uint8)
         imageio.imwrite(item_png_file, slice_img)
-        plt.subplot(131+idx)
+        plt.subplot(141+idx)
         if idx == 0:
             plt.imshow(slice_img,cmap='gray')
             plt.colorbar()
@@ -72,9 +85,8 @@ docker run -it -v $PWD:/workdir pangyuteng/drr:latest bash
 docker run --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864
 
 python3 gen_drr_with_mask.py \
-    tmp/p19-1.3.12.2.1107.5.1.4.73191.30000018092214593450000003275-image.nii.gz \
-    tmp/p19-1.3.12.2.1107.5.1.4.73191.30000018092214593450000003275-mask.nii.gz \
-    tmp/test.png cpu
+    tmp/patient-56-files/ct-image.nii.gz \
+    tmp/patient-56-files/v1_0.nii.gz \
+    tmp/patient-56-files cpu
 
-'tmp/p19-1.3.12.2.1107.5.1.4.73191.30000018092214593450000003275-image.nii.gz','tmp/p19-1.3.12.2.1107.5.1.4.73191.30000018092214593450000003275-mask.nii.gz','tmp/test.png','cpu'
 """
