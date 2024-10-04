@@ -8,15 +8,10 @@ import SimpleITK as sitk
 import uuid
 
 def elastix_register_and_transform(
-        fixed_image_file,fixed_spacing,
-        moving_image_file,moving_spacing,moving_list=[]):
+        fixed_image_file,moving_image_file,moving_list=[]):
 
-    fixed_obj = sitk.ReadImage(fixed_image_file, sitk.sitkFloat32)
-    fixed_obj.SetSpacing(fixed_spacing) # or create dcm
-    
+    fixed_obj = sitk.ReadImage(fixed_image_file, sitk.sitkFloat32)    
     moving_obj = sitk.ReadImage(moving_image_file, sitk.sitkFloat32)
-    moving_obj.SetSpacing(moving_spacing)
-
 
     fixed = sitk.GetArrayFromImage(fixed_obj)
     print('fixed',np.min(fixed),np.max(fixed))
@@ -31,13 +26,13 @@ def elastix_register_and_transform(
     print(moving_obj.GetSpacing())
     print(moving_obj.GetOrigin())
     print(moving_obj.GetDirection())
-    sys.exit(1)
+
     elastixImageFilter = sitk.ElastixImageFilter()
     elastixImageFilter.SetFixedImage(fixed_obj)
     elastixImageFilter.SetMovingImage(moving_obj)
     elastixImageFilter.SetOutputDirectory('/tmp')
 
-    method = 'okay'
+    method = 'nonrigid'
     if method == 'nonrigid':
         elastixImageFilter.SetParameterMap(sitk.GetDefaultParameterMap('nonrigid'))
     elif method == 'simple':
@@ -94,7 +89,6 @@ def elastix_register_and_transform(
         # TODO: maybe something funky here? with int transformration
         # 
         og_obj = sitk.ReadImage(moving_file,sitk.sitkFloat32)
-        og_obj.SetSpacing(moving_spacing)
         transformixImageFilter = sitk.TransformixImageFilter()
         transformixImageFilter.SetMovingImage(og_obj)
         transformixImageFilter.SetTransformParameterMap(transform_tuple)
@@ -108,38 +102,34 @@ def elastix_register_and_transform(
         sitk.WriteImage(moved,moved_file)
 
 
-def main(fixed_image_file,fixed_spacing,
-    moving_image_file,moving_spacing,drr_mask_file,output_folder):
+def main(fixed_image_file,moving_image_file,drr_mask_file,output_folder):
 
     moving_list = [
         dict(
             moving_file=moving_image_file,
-            moved_file=os.path.join(output_folder,'moved-drr-image.png'),
+            moved_file=os.path.join(output_folder,'moved-drr-image.nii.gz'),
             out_val=0,
             is_mask=False
         ),
         dict(
             moving_file=drr_mask_file,
-            moved_file=os.path.join(output_folder,'moved-drr-mask-test.png'),
+            moved_file=os.path.join(output_folder,'moved-drr-mask-test.nii.gz'),
             out_val=0,
             is_mask=True
         ),
     ]
     elastix_register_and_transform(
-        fixed_image_file,fixed_spacing,
-        moving_image_file,moving_spacing,
-        moving_list=moving_list)
+        fixed_image_file,moving_image_file,moving_list=moving_list
+    )
 
 if __name__ == "__main__":
     cxr_image_file = sys.argv[1]
-    fixed_spacing = ast.literal_eval(sys.argv[2])
-    drr_image_file = sys.argv[3]
-    moving_spacing = ast.literal_eval(sys.argv[4])
-    drr_mask_file = sys.argv[5]
-    output_folder = sys.argv[6]
+    drr_image_file = sys.argv[2]
+    drr_mask_file = sys.argv[3]
+    output_folder = sys.argv[4]
     main(
-        cxr_image_file,fixed_spacing,
-        drr_image_file,moving_spacing,
+        cxr_image_file,
+        drr_image_file,
         drr_mask_file,
         output_folder
     )
@@ -150,8 +140,8 @@ docker run -it -v $PWD:/workdir \
     pangyuteng/synthmorph-wrapper:0.1.0 bash
 
 python3 register_drr_to_cxr.py \
-    tmp/patient-56-files/cxr.dcm \
-    tmp/patient-56-files/drr-image.nii.gz \
+    tmp/patient-56-files/cxr-image.nii.gz \
+    tmp/patient-56-files/drr-mask1.nii.gz \
     tmp/patient-56-files/drr-mask1.nii.gz \
     tmp/patient-56-files
 
