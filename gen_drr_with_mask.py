@@ -13,18 +13,11 @@ from diffdrr.drr import DRR
 from diffdrr.data import read
 from diffdrr.visualization import plot_drr, plot_mask
 
-def main(image_nifti_file,mask_nifti_file,png_folder,device_id):
+def main(image_nifti_file,mask_nifti_file,output_folder,device_id):
 
     mask_obj = sitk.ReadImage(mask_nifti_file)
     mask = sitk.GetArrayFromImage(mask_obj)
-    assert(len(np.unique(mask))==4)
-    png_file = os.path.join(png_folder,'drr-plots.png')
-    mydict = {
-        os.path.join(png_folder,'drr-image.png'):0,
-        os.path.join(png_folder,'drr-mask1.png'):1,
-        os.path.join(png_folder,'drr-mask2.png'):2,
-        os.path.join(png_folder,'drr-mask3.png'):3,
-    }
+    png_file = os.path.join(output_folder,'drr-plots.png')
 
     subject = read(image_nifti_file,mask_nifti_file)
     print(subject.shape)
@@ -55,38 +48,54 @@ def main(image_nifti_file,mask_nifti_file,png_folder,device_id):
     img = img.detach().cpu().numpy()
     img = np.moveaxis(img.squeeze(),0,-1)
 
-    plt.figure()
-    
-    for item_png_file,idx in mydict.items():
-        slice_img = img[:,:,idx]
-        min_val, max_val = np.min(slice_img),np.max(slice_img)
-        slice_img = 255*((slice_img-min_val)/(max_val-min_val)).clip(0,1)
-        slice_img = slice_img.astype(np.uint8)
-        if idx == 0:
-            #slice_obj = sitk.GetImageFromArray(slice_img.astype(np.int32)*20) # max val 5000
-            slice_obj = sitk.GetImageFromArray(slice_img.astype(np.int32))
-            slice_obj.SetSpacing((spacing_mm,spacing_mm))
-            nifti_file = item_png_file.replace(".png",".nii.gz")
-            sitk.WriteImage(slice_obj,nifti_file)
-        else:
-            slice_obj = sitk.GetImageFromArray(slice_img.astype(np.int32))
-            slice_obj.SetSpacing((spacing_mm,spacing_mm))
-            nifti_file = item_png_file.replace(".png",".nii.gz")
-            sitk.WriteImage(slice_obj,nifti_file)
+    # save image as nifti.
+    idx = 0
+    drr_img = img[:,:,idx]
+    drr_image_obj = sitk.GetImageFromArray(drr_img.astype(np.int32))
+    drr_image_obj.SetSpacing((spacing_mm,spacing_mm))
+    nifti_file = os.path.join(output_folder,'drr-image.nii.gz')
+    sitk.WriteImage(drr_image_obj,nifti_file)
 
-        imageio.imwrite(item_png_file, slice_img)
-        if idx != 0:
-            binary_slice_img = (255*(slice_img>0)).astype(np.uint8)
-            imageio.imwrite(item_png_file.replace(".png","-binary.png"), binary_slice_img)
-        plt.subplot(141+idx)
-        if idx == 0:
-            plt.imshow(slice_img,cmap='gray')
-            plt.colorbar()
-        else:
-            plt.imshow(slice_img,cmap='hot')
-            plt.colorbar()
+    # save as png
+    min_val, max_val = np.min(drr_img),np.max(drr_img)
+    drr_img = 255*((drr_img-min_val)/(max_val-min_val)).clip(0,1)
+    drr_img_uint8 = drr_img.astype(np.uint8)
+    png_file = nifti_file.replace(".nii.gz",".png")
+    imageio.imwrite(png_file, drr_img_uint8)
 
-    plt.savefig(png_file)
+    # save masks as nifti and also binary nifti
+    drr_combined_mask = np.zeros_like(drr_img).squeeze()
+    for mask_idx in sorted(list(np.unique(mask))):
+        if mask_idx == 0:
+            continue
+        drr_slice = img[:,:,mask_idx].squeeze()
+        drr_slice_obj = sitk.GetImageFromArray(drr_slice.astype(np.int32))
+        drr_slice_obj.SetSpacing((spacing_mm,spacing_mm))
+        nifti_file = os.path.join(output_folder,f'drr-mask-{mask_idx}.nii.gz')
+        sitk.WriteImage(drr_slice_obj,nifti_file)
+
+        drr_combined_mask[slice_mask>0]=mask_idx
+
+    drr_mask_obj = sitk.GetImageFromArray(drr_combined_mask.astype(np.int32))
+    drr_mask_obj.SetSpacing((spacing_mm,spacing_mm))
+    nifti_file = os.path.join(output_folder,f'drr-mask.nii.gz')
+    sitk.WriteImage(drr_mask_obj,nifti_file)
+
+    # png_file = os.path.join(png_folder,'drr-plot.png')
+    # drr_image = sitk.GetArrayFromImage(drr_image_obj)
+    # drr_mask = sitk.GetArrayFromImage(drr_mask_obj)
+    # plt.figure()
+    # for item_png_file,idx in mydict.items():
+        
+    #     plt.subplot(141+idx)
+    #     if idx == 0:
+    #         plt.imshow(slice_img,cmap='gray')
+    #         plt.colorbar()
+    #     else:
+    #         plt.imshow(slice_img,cmap='hot')
+    #         plt.colorbar()
+
+    # plt.savefig(png_file)
 
 if __name__ == "__main__":
     image_nifti_file = sys.argv[1]

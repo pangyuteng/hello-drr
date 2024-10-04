@@ -112,7 +112,7 @@ def main(fixed_image_file,moving_image_file,drr_mask_file,output_folder):
         ),
         dict(
             moving_file=drr_mask_file,
-            moved_file=os.path.join(output_folder,'moved-drr-mask-test.nii.gz'),
+            moved_file=os.path.join(output_folder,'moved-drr-mask.nii.gz'),
             out_val=0,
             is_mask=True
         ),
