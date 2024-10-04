@@ -63,10 +63,17 @@ def main(image_nifti_file,mask_nifti_file,png_folder,device_id):
         slice_img = 255*((slice_img-min_val)/(max_val-min_val)).clip(0,1)
         slice_img = slice_img.astype(np.uint8)
         if idx == 0:
-            slice_obj = sitk.GetImageFromArray(slice_img.astype(np.int32)*20) # max val 5000
+            #slice_obj = sitk.GetImageFromArray(slice_img.astype(np.int32)*20) # max val 5000
+            slice_obj = sitk.GetImageFromArray(slice_img.astype(np.int32))
             slice_obj.SetSpacing((spacing_mm,spacing_mm))
             nifti_file = item_png_file.replace(".png",".nii.gz")
             sitk.WriteImage(slice_obj,nifti_file)
+        else:
+            slice_obj = sitk.GetImageFromArray(slice_img.astype(np.int32))
+            slice_obj.SetSpacing((spacing_mm,spacing_mm))
+            nifti_file = item_png_file.replace(".png",".nii.gz")
+            sitk.WriteImage(slice_obj,nifti_file)
+
         imageio.imwrite(item_png_file, slice_img)
         if idx != 0:
             binary_slice_img = (255*(slice_img>0)).astype(np.uint8)

@@ -10,7 +10,7 @@ import uuid
 def elastix_register_and_transform(
         fixed_image_file,moving_image_file,moving_list=[]):
 
-    fixed_obj = sitk.ReadImage(fixed_image_file, sitk.sitkFloat32)    
+    fixed_obj = sitk.ReadImage(fixed_image_file,sitk.sitkFloat32)
     moving_obj = sitk.ReadImage(moving_image_file, sitk.sitkFloat32)
 
     fixed = sitk.GetArrayFromImage(fixed_obj)
@@ -32,7 +32,7 @@ def elastix_register_and_transform(
     elastixImageFilter.SetMovingImage(moving_obj)
     elastixImageFilter.SetOutputDirectory('/tmp')
 
-    method = 'nonrigid'
+    method = 'okay'
     if method == 'nonrigid':
         elastixImageFilter.SetParameterMap(sitk.GetDefaultParameterMap('nonrigid'))
     elif method == 'simple':
@@ -97,8 +97,7 @@ def elastix_register_and_transform(
         elastixImageFilter.LogToFileOn()
         transformixImageFilter.Execute()
         moved = transformixImageFilter.GetResultImage()
-        #moved = sitk.Cast(moved,og_obj.GetPixelID())
-        moved = sitk.Cast(moved, sitk.sitkUInt8)
+        moved = sitk.Cast(moved,og_obj.GetPixelID())
         sitk.WriteImage(moved,moved_file)
 
 
@@ -141,7 +140,7 @@ docker run -it -v $PWD:/workdir \
 
 python3 register_drr_to_cxr.py \
     tmp/patient-56-files/cxr-image.nii.gz \
-    tmp/patient-56-files/drr-mask1.nii.gz \
+    tmp/patient-56-files/drr-image.nii.gz \
     tmp/patient-56-files/drr-mask1.nii.gz \
     tmp/patient-56-files
 
