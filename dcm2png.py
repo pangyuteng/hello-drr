@@ -17,12 +17,24 @@ import imageio
 
 dcm_file = sys.argv[1]
 png_file = sys.argv[2]
+nifti_file = sys.argv[3]
 plt_png_file = png_file.replace(".png","-plt.png")
 print(dcm_file)
 ds = pydicom.dcmread(dcm_file)
 img = ds.pixel_array
+
+img_obj = sitk.GetImageFromArray(img)
+print(img_obj.GetSize())
+print(img_obj.GetSpacing())
+print(img_obj.GetOrigin())
+print(img_obj.GetDirection())
+
 print(ds['ImagerPixelSpacing'])
-print(ds['PixelSpacing'])
+img_obj.SetSpacing(ds['ImagerPixelSpacing'])
+print(img_obj.GetSpacing())
+sitk.WriteImage(img_obj,nifti_file)
+
+#print(ds['PixelSpacing'])
 print(img.shape)
 
 plt.imshow(img,cmap='gray')
@@ -40,6 +52,6 @@ imageio.imwrite(png_file, img)
 """
 
 docker run -it -u $(id -u):$(id -g) -v $PWD:/workdir -w /workdir pangyuteng/drr:latest bash
-python3 dcm2png.py tmp/patient-56/2397263/2397265/2397266 tmp/patient-56-files/cxr.png
+python3 dcm2png.py tmp/patient-56/2397263/2397265/2397266 tmp/patient-56-files/cxr.png tmp/patient-56-files/cxr-image.nii.gz
 
 """
