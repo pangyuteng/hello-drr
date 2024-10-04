@@ -15,13 +15,14 @@ import imageio
 # img = sitk.GetArrayFromImage(img_obj)
 # img = np.squeeze(img)
 
-
 dcm_file = sys.argv[1]
 png_file = sys.argv[2]
 plt_png_file = png_file.replace(".png","-plt.png")
 print(dcm_file)
 ds = pydicom.dcmread(dcm_file)
 img = ds.pixel_array
+print(ds['ImagerPixelSpacing'])
+print(ds['PixelSpacing'])
 print(img.shape)
 
 plt.imshow(img,cmap='gray')

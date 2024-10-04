@@ -31,13 +31,13 @@ def main(image_nifti_file,mask_nifti_file,png_folder,device_id):
 
     # Initialize the DRR module for generating synthetic X-rays
     device = torch.device(device_id)
-
+    spacing_mm = 0.4
     drr = DRR(
         subject,     # An object storing the CT volume, origin, and voxel spacing
         sdd=1020.0,  # Source-to-detector distance (i.e., focal length)
         height=1024,  # Image height (if width is not provided, the generated DRR is square)
         width=1024,
-        delx=0.4,    # Pixel spacing (in mm)
+        delx=spacing_mm,    # Pixel spacing (in mm)
         renderer='siddon', # 'siddon' or 'trilinear'
     ).to(device)
 
@@ -62,6 +62,10 @@ def main(image_nifti_file,mask_nifti_file,png_folder,device_id):
         min_val, max_val = np.min(slice_img),np.max(slice_img)
         slice_img = 255*((slice_img-min_val)/(max_val-min_val)).clip(0,1)
         slice_img = slice_img.astype(np.uint8)
+        slice_obj = sitk.GetImageFromArray(slice_img)
+        slice_obj.SetSpacing((spacing_mm,spacing_mm))
+        nifti_file = item_png_file.replace(".png",".nii.gz")
+        sitk.WriteImage(slice_obj,nifti_file)
         imageio.imwrite(item_png_file, slice_img)
         if idx != 0:
             binary_slice_img = (255*(slice_img>0)).astype(np.uint8)
