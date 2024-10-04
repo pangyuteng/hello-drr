@@ -56,13 +56,6 @@ def main(image_nifti_file,mask_nifti_file,output_folder,device_id):
     nifti_file = os.path.join(output_folder,'drr-image.nii.gz')
     sitk.WriteImage(drr_image_obj,nifti_file)
 
-    # save as png
-    min_val, max_val = np.min(drr_img),np.max(drr_img)
-    drr_img = 255*((drr_img-min_val)/(max_val-min_val)).clip(0,1)
-    drr_img_uint8 = drr_img.astype(np.uint8)
-    png_file = nifti_file.replace(".nii.gz",".png")
-    imageio.imwrite(png_file, drr_img_uint8)
-
     # save masks as nifti and also binary nifti
     drr_combined_mask = np.zeros_like(drr_img).squeeze()
     for mask_idx in sorted(list(np.unique(mask))):
@@ -73,10 +66,10 @@ def main(image_nifti_file,mask_nifti_file,output_folder,device_id):
         drr_slice_obj.SetSpacing((spacing_mm,spacing_mm))
         nifti_file = os.path.join(output_folder,f'drr-mask-{mask_idx}.nii.gz')
         sitk.WriteImage(drr_slice_obj,nifti_file)
+        print(mask_idx)
+        drr_combined_mask[drr_slice>0]=mask_idx
 
-        drr_combined_mask[slice_mask>0]=mask_idx
-
-    drr_mask_obj = sitk.GetImageFromArray(drr_combined_mask.astype(np.int32))
+    drr_mask_obj = sitk.GetImageFromArray(drr_combined_mask.astype(np.int16))
     drr_mask_obj.SetSpacing((spacing_mm,spacing_mm))
     nifti_file = os.path.join(output_folder,f'drr-mask.nii.gz')
     sitk.WriteImage(drr_mask_obj,nifti_file)

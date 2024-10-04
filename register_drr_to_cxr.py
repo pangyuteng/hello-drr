@@ -32,13 +32,13 @@ def elastix_register_and_transform(
     elastixImageFilter.SetMovingImage(moving_obj)
     elastixImageFilter.SetOutputDirectory('/tmp')
 
-    method = 'okay'
+    method = 'translate_affine'
     if method == 'nonrigid':
         elastixImageFilter.SetParameterMap(sitk.GetDefaultParameterMap('nonrigid'))
     elif method == 'simple':
         elastixImageFilter.SetParameterMap(sitk.GetDefaultParameterMap('translation'))
         elastixImageFilter.AddParameterMap(sitk.GetDefaultParameterMap('affine'))
-    elif method == 'okay':
+    elif method == 'translate_affine':
         translationParameterMap = sitk.GetDefaultParameterMap("translation")
         translationParameterMap['DefaultPixelValue'] = ['0']
         translationParameterMap['Registration'] = ['MultiResolutionRegistration']
@@ -141,7 +141,7 @@ docker run -it -v $PWD:/workdir \
 python3 register_drr_to_cxr.py \
     tmp/patient-56-files/cxr-image.nii.gz \
     tmp/patient-56-files/drr-image.nii.gz \
-    tmp/patient-56-files/drr-mask1.nii.gz \
+    tmp/patient-56-files/drr-mask.nii.gz \
     tmp/patient-56-files
 
 """
